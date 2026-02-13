@@ -2,126 +2,115 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CBT PAI & Budi Pekerti</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
+
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f5; overflow: hidden; user-select: none; }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; overflow: hidden; user-select: none; }
         
-        /* HEADER ATAS */
+        /* HEADER RESPONSIF TOTAL */
         #info-bar {
-            display: none; background: #00695c; /* Hijau PAI */
-            color: white; padding: 0 20px;
-            height: 60px; align-items: center; justify-content: space-between;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none; background: #00695c; color: white; padding: 12px 20px;
+            min-height: 60px; height: auto; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; z-index: 50; 
+            display: none; flex-wrap: wrap; gap: 10px;
         }
-        .info-kiri { display: flex; flex-direction: column; }
-        .mapel-text { font-size: 16px; font-weight: bold; color: #ffeb3b; } 
-        .detail-text { font-size: 13px; margin-top: 2px; color: #e0f2f1; }
-
-        /* Area Kanan Header (Tombol Selesai & Timer) */
-        .info-kanan { display: flex; align-items: center; gap: 10px; }
         
-        #timerDisplay {
-            font-size: 20px; font-weight: bold; background: white; color: #00695c; 
-            padding: 5px 15px; border-radius: 5px; min-width: 80px; text-align: center;
+        .info-kiri { 
+            display: flex; flex-direction: column; 
+            flex: 1 1 250px; /* Memberikan ruang lebih besar untuk teks sekolah */
+            min-width: 0; /* Penting agar text-overflow berfungsi */
         }
 
-        /* Tombol Akhiri Ujian (Kecil di atas) */
+        .mapel-text { font-size: 16px; font-weight: bold; color: #ffeb3b; word-wrap: break-word; } 
+        .detail-text { font-size: 13px; color: #e0f2f1; word-wrap: break-word; line-height: 1.4; }
+
+        .info-kanan { 
+            display: flex; align-items: center; gap: 12px; 
+            flex-shrink: 0; /* Biar timer tidak gepeng */
+        }
+        
+        #timerDisplay { 
+            font-size: 18px; font-weight: bold; background: white; color: #00695c; 
+            padding: 5px 12px; border-radius: 5px; min-width: 80px; text-align: center;
+        }
+
         .btn-finish-header {
             background: #d32f2f; color: white; border: 1px solid white;
-            padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold;
-            cursor: pointer; transition: 0.2s;
+            padding: 6px 12px; border-radius: 5px; font-size: 12px; font-weight: bold;
+            cursor: pointer;
         }
-        .btn-finish-header:hover { background: #b71c1c; }
+
+        /* BANNER KONEKSI */
+        #offline-banner {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 40px;
+            background: #d32f2f; color: white; text-align: center; line-height: 40px;
+            font-weight: bold; z-index: 999999;
+        }
 
         /* LOGIN SCREEN */
         #login-screen {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 100vh; text-align: center; 
-            background: linear-gradient(135deg, #004d40, #00695c);
-            color: white; padding: 20px;
+            height: 100vh; background: linear-gradient(135deg, #004d40, #00695c); color: white; padding: 20px;
         }
         .card {
             background: white; padding: 2rem; border-radius: 15px; color: #333;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 380px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 380px; text-align: center;
         }
-        h2 { margin-bottom: 5px; color: #004d40; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        p { margin-top: 0; color: #666; font-size: 14px; }
-        
         input {
-            width: 80%; padding: 12px; margin: 15px 0; font-size: 18px; letter-spacing: 2px;
-            border: 2px solid #b2dfdb; border-radius: 8px; text-align: center; text-transform: uppercase;
-            outline: none; transition: 0.3s;
+            width: 80%; padding: 12px; margin: 15px 0; font-size: 18px; letter-spacing: 4px;
+            border: 2px solid #b2dfdb; border-radius: 8px; text-align: center; text-transform: uppercase; outline: none;
         }
-        input:focus { border-color: #00695c; }
-        
         button#btnMasuk {
             padding: 12px 25px; font-size: 16px; background: #00695c; color: white; font-weight: bold;
-            border: none; border-radius: 8px; cursor: pointer; width: 90%; transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none; border-radius: 8px; cursor: pointer; width: 95%; transition: 0.3s;
         }
-        button#btnMasuk:hover { background: #004d40; transform: translateY(-2px); }
-        button:disabled { background: #ccc; transform: none; cursor: not-allowed; }
 
         /* AREA UJIAN */
-        #exam-screen { display: none; width: 100vw; height: calc(100vh - 60px); background: white; }
+        #exam-screen { display: none; width: 100vw; height: calc(100vh - 70px); background: white; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* LAYAR PERINGATAN & SELESAI */
+        /* OVERLAY SCREEN */
         .overlay-screen {
             display: none; flex-direction: column; justify-content: center; align-items: center;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9999; text-align: center; padding: 20px; box-sizing: border-box;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; text-align: center; padding: 20px; box-sizing: border-box;
         }
-        
-        /* Pelanggaran: Merah Pekat */
         #warning-screen { background: #b71c1c; color: white; }
-        
-        /* Selesai: Hijau Pekat */
         #finish-screen { background: #004d40; color: white; }
 
-        /* Teks Kontras Tinggi */
-        .high-contrast-text {
-            color: #ffffff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Bayangan Hitam agar Teks Menonjol */
-            font-weight: 900; letter-spacing: 1px;
+        @media (max-width: 600px) {
+            #info-bar { padding: 8px 15px; }
+            .mapel-text { font-size: 14px; }
+            .detail-text { font-size: 11px; }
+            #timerDisplay { font-size: 15px; padding: 4px 8px; }
+            #exam-screen { height: auto; min-height: 80vh; flex-grow: 1; }
         }
-
-        .btn-reload {
-            background: white; color: #b71c1c; border: none;
-            padding: 12px 30px; border-radius: 30px;
-            font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .btn-reload:hover { transform: scale(1.05); }
-
     </style>
 </head>
 <body>
 
+    <div id="offline-banner">🔴 KONEKSI TERPUTUS - PERIKSA INTERNET ANDA</div>
+
     <div id="info-bar">
         <div class="info-kiri">
-            <span class="mapel-text" id="lblMapel">MATA PELAJARAN</span>
-            <span class="detail-text" id="lblDetail">Memuat data...</span> 
+            <span class="mapel-text" id="lblMapel">MEMUAT...</span>
+            <span class="detail-text" id="lblDetail">Menghubungkan ke server...</span> 
         </div>
         <div class="info-kanan">
-            <button onclick="konfirmasiSelesai()" class="btn-finish-header">AKHIRI PENILAIAN</button>
+            <button onclick="konfirmasiSelesai()" id="btnFinish" style="display:none;" class="btn-finish-header">SELESAI</button>
             <div id="timerDisplay">00:00:00</div>
         </div>
     </div>
 
     <div id="login-screen">
         <div class="card">
-            <h2 style="font-size: 20px;">🕌 CBT PAI & BUDI PEKERTI</h2>
-            <p>Silakan masukkan PIN ujian</p>
+            <h2 style="color:#00695c; margin:0;">🕌 CBT PAI</h2>
+            <p style="color:#666; font-size:14px;">Masukkan PIN untuk memulai ujian</p>
             <input type="text" id="tokenInput" placeholder="PIN" autocomplete="off">
             <br>
             <button onclick="cekToken()" id="btnMasuk">MULAI MENGERJAKAN</button>
-            <p id="pesan" style="color:#d32f2f; margin-top:15px; font-weight:bold; font-size: 14px;"></p>
-        </div>
-        
-        <div style="margin-top: 20px; font-size: 12px; opacity: 0.8; color: #b2dfdb;">
-            &copy; 2026 Ruang Belajar PAI
+            <p id="pesan" style="color:#d32f2f; margin-top:15px; font-weight:bold; font-size: 13px;"></p>
         </div>
     </div>
 
@@ -130,160 +119,147 @@
     </div>
 
     <div id="warning-screen" class="overlay-screen">
-        <h1 style="font-size: 80px; margin:0;">🚫</h1>
-        <h2 class="high-contrast-text">PELANGGARAN TERDETEKSI!</h2>
-        <p style="font-size: 18px; margin-bottom: 30px; font-weight: 500;">
-            Anda terdeteksi keluar dari aplikasi atau membuka tab lain.
-        </p>
-        <button onclick="location.reload()" class="btn-reload">LOGIN ULANG</button>
+        <h1 style="font-size: 60px; margin:0;">🚫</h1>
+        <h2 style="margin: 10px 0;">PELANGGARAN TERDETEKSI!</h2>
+        <p>Sistem mendeteksi Anda keluar tab, melakukan split screen, atau berpindah aplikasi.</p>
+        <button onclick="location.reload()" style="padding:12px 25px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; background:white; color:#b71c1c; margin-top:20px;">LOGIN ULANG</button>
     </div>
 
     <div id="finish-screen" class="overlay-screen">
-        <h1 style="font-size: 60px; margin:0;">✅</h1>
-        <h2 class="high-contrast-text">WAKTU HABIS / SELESAI</h2>
-        <p>Terima kasih. Jawaban Anda telah tersimpan otomatis (jika Google Form).</p>
-        <p style="font-size: 14px; opacity: 0.8;">Silakan lapor kepada pengawas ujian.</p>
+        <h1 style="font-size: 60px;">✅</h1>
+        <h2>UJIAN SELESAI</h2>
+        <p>Terima kasih. Jawaban Anda telah tersimpan aman.</p>
     </div>
 
     <script>
-        // --- 🔴 TEMPEL LINK APPS SCRIPT ANDA DI SINI ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4MKjvOYrN4HbZiBBqr7yo-JRKwp36S4YFun1hVyo4GzKvu6v6GfOk174T9M1qFmrd3g/exec"; 
-
+        
         let isUjianBerjalan = false;
         let timerInterval;
         let currentToken = "";
+        let initialHeight = window.innerHeight;
+        let initialWidth = window.innerWidth;
+
+        window.addEventListener('online', () => { document.getElementById('offline-banner').style.display = 'none'; });
+        window.addEventListener('offline', () => { document.getElementById('offline-banner').style.display = 'block'; });
 
         function cekToken() {
             const token = document.getElementById('tokenInput').value.trim().toUpperCase();
             const btn = document.getElementById('btnMasuk');
             const pesan = document.getElementById('pesan');
 
-            if(!token) { pesan.innerText = "⚠️ Token wajib diisi!"; return; }
+            if(!token) { pesan.innerText = "⚠️ PIN tidak boleh kosong!"; return; }
+            if (!navigator.onLine) { pesan.innerText = "⚠️ Tidak ada internet!"; return; }
 
-            btn.innerText = "Mengecek..."; btn.disabled = true; pesan.innerText = "";
+            btn.innerText = "Memvalidasi..."; btn.disabled = true;
 
             fetch(SCRIPT_URL + "?password=" + token)
             .then(response => response.json())
             .then(data => {
                 if(data.status === "SUKSES") {
-                    currentToken = token; 
-                    
+                    currentToken = token;
                     document.getElementById('lblMapel').innerText = data.mapel;
-                    // Cek Sekolah (agar tidak undefined)
-                    let sekolah = data.sekolah ? data.sekolah : "Sekolah";
-                    document.getElementById('lblDetail').innerText = sekolah + " | " + data.kelas;
-                    
+                    document.getElementById('lblDetail').innerText = (data.sekolah || "Sekolah") + " | " + data.kelas;
                     mulaiUjian(data.url, data.waktu);
-
-                } else if (data.status === "NONAKTIF") {
-                    pesan.innerText = "⛔ MAAF, UJIAN SUDAH DITUTUP.";
-                    btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
                 } else {
-                    pesan.innerText = "❌ Token Tidak Ditemukan!";
+                    pesan.innerText = "❌ PIN SALAH ATAU UJIAN NONAKTIF";
                     btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
                 }
             })
-            .catch(error => {
-                pesan.innerText = "⚠️ Gagal koneksi. Cek internet Anda.";
+            .catch(() => {
+                pesan.innerText = "⚠️ Gangguan Server. Coba lagi.";
                 btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
             });
         }
 
         function mulaiUjian(url, menit) {
-            document.documentElement.requestFullscreen().catch((e) => {});
-            
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('info-bar').style.display = 'flex';
             document.getElementById('exam-screen').style.display = 'block';
             document.getElementById('frameSoal').src = url;
+            document.getElementById('btnFinish').style.display = 'block';
 
+            try { document.documentElement.requestFullscreen(); } catch(e) {}
+            
             isUjianBerjalan = true;
+            // Rekam ukuran layar saat ujian dimulai
+            initialHeight = window.innerHeight;
+            initialWidth = window.innerWidth;
+            
             aktifkanPatroli();
             kelolaTimer(menit);
         }
 
         function kelolaTimer(menitDurasi) {
-            const storageKey = 'ujian_v2_' + currentToken; // Kunci baru biar fresh
-            const savedEndTime = localStorage.getItem(storageKey);
-            
-            let targetWaktu;
-            const now = new Date().getTime();
+            const storageKey = 'cbt_pai_' + currentToken; 
+            let targetWaktu = localStorage.getItem(storageKey) || (new Date().getTime() + (menitDurasi * 60 * 1000));
+            localStorage.setItem(storageKey, targetWaktu);
 
-            if (savedEndTime) {
-                targetWaktu = parseInt(savedEndTime);
-                if (now > targetWaktu) { waktuHabis(); return; }
-            } else {
-                targetWaktu = now + (menitDurasi * 60 * 1000);
-                localStorage.setItem(storageKey, targetWaktu);
-            }
-            updateTimer(targetWaktu);
-        }
-
-        function updateTimer(endTime) {
             timerInterval = setInterval(() => {
-                const now = new Date().getTime();
-                const selisih = endTime - now;
-
+                const selisih = targetWaktu - new Date().getTime();
                 if (selisih <= 0) {
                     waktuHabis();
                 } else {
-                    let jam = Math.floor((selisih % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    let menit = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
-                    let detik = Math.floor((selisih % (1000 * 60)) / 1000);
-                    
+                    let jam = Math.floor(selisih / 3600000);
+                    let min = Math.floor((selisih % 3600000) / 60000);
+                    let sec = Math.floor((selisih % 60000) / 1000);
                     document.getElementById('timerDisplay').innerText = 
-                        (jam < 10 ? "0" + jam : jam) + ":" + 
-                        (menit < 10 ? "0" + menit : menit) + ":" + 
-                        (detik < 10 ? "0" + detik : detik);
+                        `${String(jam).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
                 }
             }, 1000);
-        }
-
-        // Fitur Tombol Selesai Manual (Request Baru)
-        function konfirmasiSelesai() {
-            let yakin = confirm("Apakah Anda yakin ingin MENGAKHIRI ujian ini?\n\n(Pastikan sudah SUBMIT/Kirim di Google Form dulu!)");
-            if (yakin) {
-                waktuHabis();
-            }
-        }
-
-        function waktuHabis() {
-            clearInterval(timerInterval);
-            localStorage.removeItem('ujian_v2_' + currentToken); // Hapus sesi
-            
-            isUjianBerjalan = false;
-            document.getElementById('timerDisplay').innerText = "00:00:00";
-            document.getElementById('exam-screen').style.display = 'none';
-            document.getElementById('finish-screen').style.display = 'flex';
-            
-            if (document.exitFullscreen) document.exitFullscreen();
         }
 
         function aktifkanPatroli() {
             const frame = document.getElementById('frameSoal');
             
-            document.addEventListener("visibilitychange", function() {
-                if (document.hidden && isUjianBerjalan) { blokirSiswa(); }
+            // 1. Ganti Tab
+            document.addEventListener("visibilitychange", () => { 
+                if (document.hidden && isUjianBerjalan) blokirSiswa(); 
             });
 
-            window.addEventListener("blur", function() {
+            // 2. Klik Luar Aplikasi
+            window.addEventListener("blur", () => { 
+                setTimeout(() => { if (isUjianBerjalan && document.activeElement !== frame) blokirSiswa(); }, 300);
+            });
+
+            // 3. Deteksi Split Screen (Resize)
+            window.addEventListener("resize", () => {
                 if (isUjianBerjalan) {
-                    setTimeout(() => { if (document.activeElement !== frame) { blokirSiswa(); } }, 100);
+                    const diffH = Math.abs(initialHeight - window.innerHeight);
+                    const diffW = Math.abs(initialWidth - window.innerWidth);
+                    
+                    // Jika layar berubah > 150px (Asumsi split screen atau buka aplikasi lain)
+                    // Keyboard HP biasanya memicu resize, tapi kita beri toleransi 200px
+                    if (diffH > 200 || diffW > 150) {
+                        blokirSiswa();
+                    }
                 }
             });
         }
 
         function blokirSiswa() {
+            if(!isUjianBerjalan) return;
             isUjianBerjalan = false;
-            clearInterval(timerInterval); // Stop timer sementara
-            // Tidak menghapus localStorage, supaya waktu tetap jalan di background (server time logic)
-            
+            clearInterval(timerInterval);
             document.getElementById('exam-screen').style.display = 'none';
+            document.getElementById('info-bar').style.display = 'none';
             document.getElementById('warning-screen').style.display = 'flex';
-            if (document.exitFullscreen) document.exitFullscreen();
         }
 
-        document.addEventListener('contextmenu', event => event.preventDefault());
+        function konfirmasiSelesai() {
+            if(confirm("Apakah Anda yakin ingin mengakhiri ujian?")) waktuHabis();
+        }
+
+        function waktuHabis() {
+            clearInterval(timerInterval);
+            localStorage.removeItem('cbt_pai_' + currentToken); 
+            isUjianBerjalan = false;
+            document.getElementById('exam-screen').style.display = 'none';
+            document.getElementById('info-bar').style.display = 'none';
+            document.getElementById('finish-screen').style.display = 'flex';
+        }
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>
