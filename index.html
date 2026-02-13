@@ -3,73 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBT Ujian Sekolah</title>
+    <title>CBT PAI & Budi Pekerti</title>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; overflow: hidden; user-select: none; }
+        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f5; overflow: hidden; user-select: none; }
         
-        /* 1. INFO BAR (HEADER) */
+        /* HEADER ATAS */
         #info-bar {
-            display: none; /* Sembunyi dulu */
-            background: #1e3c72; color: white; padding: 10px 20px;
-            height: 50px; align-items: center; justify-content: space-between;
+            display: none; background: #00695c; /* Hijau PAI */
+            color: white; padding: 0 20px;
+            height: 60px; align-items: center; justify-content: space-between;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .info-kiri { display: flex; flex-direction: column; font-size: 14px; }
-        .info-kanan { font-size: 24px; font-weight: bold; background: #d32f2f; padding: 5px 15px; border-radius: 5px; }
+        .info-kiri { display: flex; flex-direction: column; }
+        .mapel-text { font-size: 16px; font-weight: bold; color: #ffeb3b; } 
+        .detail-text { font-size: 13px; margin-top: 2px; color: #e0f2f1; }
 
-        /* 2. LOGIN SCREEN */
+        /* Area Kanan Header (Tombol Selesai & Timer) */
+        .info-kanan { display: flex; align-items: center; gap: 10px; }
+        
+        #timerDisplay {
+            font-size: 20px; font-weight: bold; background: white; color: #00695c; 
+            padding: 5px 15px; border-radius: 5px; min-width: 80px; text-align: center;
+        }
+
+        /* Tombol Akhiri Ujian (Kecil di atas) */
+        .btn-finish-header {
+            background: #d32f2f; color: white; border: 1px solid white;
+            padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-finish-header:hover { background: #b71c1c; }
+
+        /* LOGIN SCREEN */
         #login-screen {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 100vh; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white;
+            height: 100vh; text-align: center; 
+            background: linear-gradient(135deg, #004d40, #00695c);
+            color: white; padding: 20px;
         }
         .card {
-            background: white; padding: 2.5rem; border-radius: 15px; color: black;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%; max-width: 400px;
+            background: white; padding: 2rem; border-radius: 15px; color: #333;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 380px;
         }
+        h2 { margin-bottom: 5px; color: #004d40; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        p { margin-top: 0; color: #666; font-size: 14px; }
+        
         input {
             width: 80%; padding: 12px; margin: 15px 0; font-size: 18px; letter-spacing: 2px;
-            border: 2px solid #ddd; border-radius: 8px; text-align: center; text-transform: uppercase;
+            border: 2px solid #b2dfdb; border-radius: 8px; text-align: center; text-transform: uppercase;
+            outline: none; transition: 0.3s;
         }
-        button {
-            padding: 12px 25px; font-size: 16px; background: #28a745; color: white; font-weight: bold;
+        input:focus { border-color: #00695c; }
+        
+        button#btnMasuk {
+            padding: 12px 25px; font-size: 16px; background: #00695c; color: white; font-weight: bold;
             border: none; border-radius: 8px; cursor: pointer; width: 90%; transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        button:hover { background: #218838; transform: scale(1.02); }
+        button#btnMasuk:hover { background: #004d40; transform: translateY(-2px); }
+        button:disabled { background: #ccc; transform: none; cursor: not-allowed; }
 
-        /* 3. EXAM SCREEN */
-        #exam-screen {
-            display: none; width: 100vw; height: calc(100vh - 70px); /* Kurangi tinggi header */
-        }
+        /* AREA UJIAN */
+        #exam-screen { display: none; width: 100vw; height: calc(100vh - 60px); background: white; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* 4. WARNING & SELESAI */
+        /* LAYAR PERINGATAN & SELESAI */
         .overlay-screen {
             display: none; flex-direction: column; justify-content: center; align-items: center;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9999; text-align: center; color: white;
+            z-index: 9999; text-align: center; padding: 20px; box-sizing: border-box;
         }
-        #warning-screen { background: #d32f2f; }
-        #finish-screen { background: #1e3c72; }
+        
+        /* Pelanggaran: Merah Pekat */
+        #warning-screen { background: #b71c1c; color: white; }
+        
+        /* Selesai: Hijau Pekat */
+        #finish-screen { background: #004d40; color: white; }
+
+        /* Teks Kontras Tinggi */
+        .high-contrast-text {
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Bayangan Hitam agar Teks Menonjol */
+            font-weight: 900; letter-spacing: 1px;
+        }
+
+        .btn-reload {
+            background: white; color: #b71c1c; border: none;
+            padding: 12px 30px; border-radius: 30px;
+            font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn-reload:hover { transform: scale(1.05); }
+
     </style>
 </head>
 <body>
 
     <div id="info-bar">
         <div class="info-kiri">
-            <b id="lblMapel">MATA PELAJARAN</b>
-            <span id="lblKelas">Kelas | Tanggal</span>
+            <span class="mapel-text" id="lblMapel">MATA PELAJARAN</span>
+            <span class="detail-text" id="lblDetail">Memuat data...</span> 
         </div>
-        <div class="info-kanan" id="timerDisplay">00:00:00</div>
+        <div class="info-kanan">
+            <button onclick="konfirmasiSelesai()" class="btn-finish-header">AKHIRI PENILAIAN</button>
+            <div id="timerDisplay">00:00:00</div>
+        </div>
     </div>
 
     <div id="login-screen">
         <div class="card">
-            <h2>💻 CBT SEKOLAH</h2>
-            <p>Masukkan Token Ujian</p>
+            <h2 style="font-size: 20px;">🕌 CBT PAI & BUDI PEKERTI</h2>
+            <p>Silakan masukkan token ujian</p>
             <input type="text" id="tokenInput" placeholder="TOKEN" autocomplete="off">
             <br>
             <button onclick="cekToken()" id="btnMasuk">MULAI MENGERJAKAN</button>
-            <p id="pesan" style="color:red; margin-top:10px; font-weight:bold;"></p>
+            <p id="pesan" style="color:#d32f2f; margin-top:15px; font-weight:bold; font-size: 14px;"></p>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 12px; opacity: 0.8; color: #b2dfdb;">
+            &copy; 2026 Ruang Belajar PAI
         </div>
     </div>
 
@@ -78,50 +130,61 @@
     </div>
 
     <div id="warning-screen" class="overlay-screen">
-        <h1>⛔ PELANGGARAN!</h1>
-        <p>Anda membuka aplikasi lain. Ujian diblokir.</p>
-        <button onclick="location.reload()" style="padding:10px 20px; border-radius:20px; border:none; cursor:pointer;">LOGIN ULANG</button>
+        <h1 style="font-size: 80px; margin:0;">🚫</h1>
+        <h2 class="high-contrast-text">PELANGGARAN TERDETEKSI!</h2>
+        <p style="font-size: 18px; margin-bottom: 30px; font-weight: 500;">
+            Anda terdeteksi keluar dari aplikasi atau membuka tab lain.
+        </p>
+        <button onclick="location.reload()" class="btn-reload">LOGIN ULANG</button>
     </div>
 
     <div id="finish-screen" class="overlay-screen">
-        <h1>⌛ WAKTU HABIS!</h1>
-        <p>Silakan kumpulkan jawaban Anda segera.</p>
-        <p>Lapor ke Pengawas jika belum selesai.</p>
+        <h1 style="font-size: 60px; margin:0;">✅</h1>
+        <h2 class="high-contrast-text">WAKTU HABIS / SELESAI</h2>
+        <p>Terima kasih. Jawaban Anda telah tersimpan otomatis (jika Google Form).</p>
+        <p style="font-size: 14px; opacity: 0.8;">Silakan lapor kepada pengawas ujian.</p>
     </div>
 
     <script>
-        // --- GANTI LINK APPS SCRIPT ANDA DI SINI ---
+        // --- 🔴 TEMPEL LINK APPS SCRIPT ANDA DI SINI ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4MKjvOYrN4HbZiBBqr7yo-JRKwp36S4YFun1hVyo4GzKvu6v6GfOk174T9M1qFmrd3g/exec"; 
 
         let isUjianBerjalan = false;
-        let sisaWaktu = 0;
         let timerInterval;
+        let currentToken = "";
 
-        // --- FUNGSI UTAMA ---
         function cekToken() {
-            const token = document.getElementById('tokenInput').value.trim();
+            const token = document.getElementById('tokenInput').value.trim().toUpperCase();
             const btn = document.getElementById('btnMasuk');
             const pesan = document.getElementById('pesan');
 
-            if(!token) { pesan.innerText = "Token wajib diisi!"; return; }
+            if(!token) { pesan.innerText = "⚠️ Token wajib diisi!"; return; }
 
-            btn.innerText = "Memuat Soal..."; btn.disabled = true;
+            btn.innerText = "Mengecek..."; btn.disabled = true; pesan.innerText = "";
 
             fetch(SCRIPT_URL + "?password=" + token)
             .then(response => response.json())
             .then(data => {
                 if(data.status === "SUKSES") {
+                    currentToken = token; 
+                    
                     document.getElementById('lblMapel').innerText = data.mapel;
-                    const tanggalSekarang = new Date().toLocaleDateString('id-ID');
-                    document.getElementById('lblKelas').innerText = data.kelas + " | " + tanggalSekarang;
+                    // Cek Sekolah (agar tidak undefined)
+                    let sekolah = data.sekolah ? data.sekolah : "Sekolah";
+                    document.getElementById('lblDetail').innerText = sekolah + " | " + data.kelas;
+                    
                     mulaiUjian(data.url, data.waktu);
+
+                } else if (data.status === "NONAKTIF") {
+                    pesan.innerText = "⛔ MAAF, UJIAN SUDAH DITUTUP.";
+                    btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
                 } else {
-                    pesan.innerText = "Token Salah / Tidak Ditemukan!";
+                    pesan.innerText = "❌ Token Tidak Ditemukan!";
                     btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
                 }
             })
             .catch(error => {
-                pesan.innerText = "Gagal koneksi internet.";
+                pesan.innerText = "⚠️ Gagal koneksi. Cek internet Anda.";
                 btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
             });
         }
@@ -135,90 +198,92 @@
             document.getElementById('frameSoal').src = url;
 
             isUjianBerjalan = true;
-            
-            // JALANKAN PATROLI BARU
             aktifkanPatroli();
-            jalankanTimer(menit);
+            kelolaTimer(menit);
         }
 
-        // --- LOGIKA TIMER ---
-        function jalankanTimer(menit) {
-            sisaWaktu = menit * 60;
-            updateDisplayTimer();
+        function kelolaTimer(menitDurasi) {
+            const storageKey = 'ujian_v2_' + currentToken; // Kunci baru biar fresh
+            const savedEndTime = localStorage.getItem(storageKey);
+            
+            let targetWaktu;
+            const now = new Date().getTime();
 
+            if (savedEndTime) {
+                targetWaktu = parseInt(savedEndTime);
+                if (now > targetWaktu) { waktuHabis(); return; }
+            } else {
+                targetWaktu = now + (menitDurasi * 60 * 1000);
+                localStorage.setItem(storageKey, targetWaktu);
+            }
+            updateTimer(targetWaktu);
+        }
+
+        function updateTimer(endTime) {
             timerInterval = setInterval(() => {
-                sisaWaktu--;
-                updateDisplayTimer();
-                if (sisaWaktu <= 0) {
-                    clearInterval(timerInterval);
+                const now = new Date().getTime();
+                const selisih = endTime - now;
+
+                if (selisih <= 0) {
                     waktuHabis();
+                } else {
+                    let jam = Math.floor((selisih % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    let menit = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
+                    let detik = Math.floor((selisih % (1000 * 60)) / 1000);
+                    
+                    document.getElementById('timerDisplay').innerText = 
+                        (jam < 10 ? "0" + jam : jam) + ":" + 
+                        (menit < 10 ? "0" + menit : menit) + ":" + 
+                        (detik < 10 ? "0" + detik : detik);
                 }
             }, 1000);
         }
 
-        function updateDisplayTimer() {
-            let jam = Math.floor(sisaWaktu / 3600);
-            let menit = Math.floor((sisaWaktu % 3600) / 60);
-            let detik = sisaWaktu % 60;
-            document.getElementById('timerDisplay').innerText = 
-                (jam < 10 ? "0" + jam : jam) + ":" + 
-                (menit < 10 ? "0" + menit : menit) + ":" + 
-                (detik < 10 ? "0" + detik : detik);
+        // Fitur Tombol Selesai Manual (Request Baru)
+        function konfirmasiSelesai() {
+            let yakin = confirm("Apakah Anda yakin ingin MENGAKHIRI ujian ini?\n\n(Pastikan sudah SUBMIT/Kirim di Google Form dulu!)");
+            if (yakin) {
+                waktuHabis();
+            }
         }
 
         function waktuHabis() {
+            clearInterval(timerInterval);
+            localStorage.removeItem('ujian_v2_' + currentToken); // Hapus sesi
+            
             isUjianBerjalan = false;
+            document.getElementById('timerDisplay').innerText = "00:00:00";
             document.getElementById('exam-screen').style.display = 'none';
             document.getElementById('finish-screen').style.display = 'flex';
+            
             if (document.exitFullscreen) document.exitFullscreen();
         }
 
-        // --- SISTEM KEAMANAN (ANTI-CURANG) YANG SUDAH DIPERBAIKI ---
         function aktifkanPatroli() {
             const frame = document.getElementById('frameSoal');
             
-            // 1. Deteksi Pindah Tab / Minimize (Ini paling akurat)
             document.addEventListener("visibilitychange", function() {
-                if (document.hidden && isUjianBerjalan) {
-                    blokirSiswa("Membuka Tab Lain / Minimize");
-                }
+                if (document.hidden && isUjianBerjalan) { blokirSiswa(); }
             });
 
-            // 2. Deteksi Kehilangan Fokus (Blur) - TAPI LEBIH PINTAR
             window.addEventListener("blur", function() {
                 if (isUjianBerjalan) {
-                    // Beri jeda 0.1 detik untuk cek: Apakah fokusnya pindah ke Iframe?
-                    setTimeout(() => {
-                        // Jika elemen yang aktif sekarang ADALAH iframe, berarti AMAN (Siswa cuma klik soal)
-                        if (document.activeElement === frame) {
-                            // Aman, tidak melakukan apa-apa
-                            return; 
-                        } else {
-                            // Fokus pindah ke tempat lain (misal Taskbar/Aplikasi lain) -> BLOKIR
-                            blokirSiswa("Klik di luar aplikasi");
-                        }
-                    }, 100);
+                    setTimeout(() => { if (document.activeElement !== frame) { blokirSiswa(); } }, 100);
                 }
             });
         }
 
-        function blokirSiswa(alasan) {
+        function blokirSiswa() {
             isUjianBerjalan = false;
-            clearInterval(timerInterval);
+            clearInterval(timerInterval); // Stop timer sementara
+            // Tidak menghapus localStorage, supaya waktu tetap jalan di background (server time logic)
+            
             document.getElementById('exam-screen').style.display = 'none';
-            
-            // Tampilkan pesan pelanggaran
             document.getElementById('warning-screen').style.display = 'flex';
-            
-            // Opsional: Tampilkan alasan di console (F12)
-            console.log("DIBLOKIR KARENA: " + alasan);
-
             if (document.exitFullscreen) document.exitFullscreen();
         }
 
-        // Mencegah Klik Kanan
         document.addEventListener('contextmenu', event => event.preventDefault());
-
     </script>
 </body>
 </html>
