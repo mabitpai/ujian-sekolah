@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exambrowser Sekolah</title>
+    <style>
+        /* CSS AGAR TAMPILAN RAPI & FULLSCREEN */
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; overflow: hidden; user-select: none; }
+        
+        /* 1. Tampilan Login */
+        #login-screen {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white;
+        }
+        .card {
+            background: white; padding: 2.5rem; border-radius: 15px; color: black;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%; max-width: 400px;
+        }
+        input {
+            width: 80%; padding: 12px; margin: 15px 0; font-size: 18px; letter-spacing: 2px;
+            border: 2px solid #ddd; border-radius: 8px; text-align: center; text-transform: uppercase;
+        }
+        button {
+            padding: 12px 25px; font-size: 16px; background: #28a745; color: white; font-weight: bold;
+            border: none; border-radius: 8px; cursor: pointer; width: 90%; transition: 0.3s;
+        }
+        button:hover { background: #218838; transform: scale(1.02); }
+
+        /* 2. Tampilan Ujian (Iframe) */
+        #exam-screen {
+            display: none; width: 100vw; height: 100vh; background: white;
+        }
+        iframe {
+            width: 100%; height: 100%; border: none;
+        }
+
+        /* 3. Layar Hukuman (Peringatan) */
+        #warning-screen {
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #d32f2f; color: white; z-index: 9999; text-align: center;
+        }
+        #warning-screen h1 { font-size: 3rem; margin-bottom: 10px; }
+        #warning-screen p { font-size: 1.2rem; max-width: 80%; }
+        .btn-reload {
+            margin-top: 20px; padding: 10px 30px; background: white; color: #d32f2f;
+            border: none; border-radius: 30px; font-weight: bold; cursor: pointer; text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="card">
+            <h2>🔐 Ujian Sekolah</h2>
+            <p>Masukkan Token dari Pengawas</p>
+            <input type="text" id="tokenInput" placeholder="TOKEN" autocomplete="off">
+            <br>
+            <button onclick="cekToken()" id="btnMasuk">MULAI MENGERJAKAN</button>
+            <p id="pesan" style="color:red; margin-top:10px; font-weight:bold;"></p>
+        </div>
+    </div>
+
+    <div id="exam-screen">
+        <iframe id="frameSoal" src=""></iframe>
+    </div>
+
+    <div id="warning-screen">
+        <h1>⛔ PELANGGARAN!</h1>
+        <p>Anda terdeteksi meninggalkan halaman ujian (pindah tab/aplikasi).</p>
+        <p>Akses ujian Anda telah <b>DIBLOKIR</b>.</p>
+        <hr style="width: 50%; opacity: 0.5;">
+        <p>Lapor ke Pengawas untuk Token Baru.</p>
+        <button class="btn-reload" onclick="location.reload()">LOGIN ULANG</button>
+    </div>
+
+    <script>
+        // --- TEMPEL LINK APPS SCRIPT ANDA DI BAWAH INI ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4MKjvOYrN4HbZiBBqr7yo-JRKwp36S4YFun1hVyo4GzKvu6v6GfOk174T9M1qFmrd3g/exec"; 
+
+        let isUjianBerjalan = false;
+
+        // --- FUNGSI LOGIN ---
+        function cekToken() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const btn = document.getElementById('btnMasuk');
+            const pesan = document.getElementById('pesan');
+
+            if(!token) {
+                pesan.innerText = "Token wajib diisi!";
+                return;
+            }
+
+            btn.innerText = "Memeriksa...";
+            btn.disabled = true;
+
+            // Cek ke Google Sheet
+            fetch(SCRIPT_URL + "?password=" + token)
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "SUKSES") {
+                    mulaiUjian(data.url);
+                } else {
+                    pesan.innerText = "Token SALAH / TIDAK DITEMUKAN!";
+                    btn.innerText = "MULAI MENGERJAKAN";
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                pesan.innerText = "Gagal koneksi internet.";
+                btn.innerText = "MULAI MENGERJAKAN";
+                btn.disabled = false;
+            });
+        }
+
+        function mulaiUjian(urlSoal) {
+            // Masuk Fullscreen
+            document.documentElement.requestFullscreen().catch((e) => {});
+            
+            // Ganti Tampilan
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('exam-screen').style.display = 'block';
+            document.getElementById('frameSoal').src = urlSoal;
+
+            // Aktifkan Security
+            isUjianBerjalan = true;
+            aktifkanPatroli();
+        }
+
+        // --- SISTEM KEAMANAN (PATROLI) ---
+        function aktifkanPatroli() {
+            // Deteksi Pindah Tab / Minimize
+            document.addEventListener("visibilitychange", function() {
+                if (document.hidden && isUjianBerjalan) {
+                    blokirSiswa();
+                }
+            });
+
+            // Deteksi Klik di luar jendela
+            window.addEventListener("blur", function() {
+                if (isUjianBerjalan) {
+                    blokirSiswa();
+                }
+            });
+        }
+
+        function blokirSiswa() {
+            isUjianBerjalan = false;
+            document.getElementById('frameSoal').src = ""; // Matikan Soal
+            document.getElementById('exam-screen').style.display = 'none';
+            document.getElementById('warning-screen').style.display = 'flex'; // Munculkan Layar Merah
+            if (document.exitFullscreen) document.exitFullscreen(); // Keluar Fullscreen
+        }
+
+        // Mencegah Klik Kanan
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+    </script>
+</body>
+</html>
