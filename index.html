@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exambrowser Sekolah</title>
+    <title>CBT Ujian Sekolah</title>
     <style>
-        /* CSS AGAR TAMPILAN RAPI & FULLSCREEN */
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; overflow: hidden; user-select: none; }
         
-        /* 1. Tampilan Login */
+        /* 1. INFO BAR (HEADER) */
+        #info-bar {
+            display: none; /* Sembunyi dulu */
+            background: #1e3c72; color: white; padding: 10px 20px;
+            height: 50px; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .info-kiri { display: flex; flex-direction: column; font-size: 14px; }
+        .info-kanan { font-size: 24px; font-weight: bold; background: #d32f2f; padding: 5px 15px; border-radius: 5px; }
+
+        /* 2. LOGIN SCREEN */
         #login-screen {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             height: 100vh; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white;
@@ -27,34 +36,36 @@
         }
         button:hover { background: #218838; transform: scale(1.02); }
 
-        /* 2. Tampilan Ujian (Iframe) */
+        /* 3. EXAM SCREEN */
         #exam-screen {
-            display: none; width: 100vw; height: 100vh; background: white;
+            display: none; width: 100vw; height: calc(100vh - 70px); /* Kurangi tinggi header */
         }
-        iframe {
-            width: 100%; height: 100%; border: none;
-        }
+        iframe { width: 100%; height: 100%; border: none; }
 
-        /* 3. Layar Hukuman (Peringatan) */
-        #warning-screen {
+        /* 4. WARNING & SELESAI */
+        .overlay-screen {
             display: none; flex-direction: column; justify-content: center; align-items: center;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #d32f2f; color: white; z-index: 9999; text-align: center;
+            z-index: 9999; text-align: center; color: white;
         }
-        #warning-screen h1 { font-size: 3rem; margin-bottom: 10px; }
-        #warning-screen p { font-size: 1.2rem; max-width: 80%; }
-        .btn-reload {
-            margin-top: 20px; padding: 10px 30px; background: white; color: #d32f2f;
-            border: none; border-radius: 30px; font-weight: bold; cursor: pointer; text-decoration: none;
-        }
+        #warning-screen { background: #d32f2f; }
+        #finish-screen { background: #1e3c72; }
     </style>
 </head>
 <body>
 
+    <div id="info-bar">
+        <div class="info-kiri">
+            <b id="lblMapel">MATA PELAJARAN</b>
+            <span id="lblKelas">Kelas | Tanggal</span>
+        </div>
+        <div class="info-kanan" id="timerDisplay">00:00:00</div>
+    </div>
+
     <div id="login-screen">
         <div class="card">
-            <h2>🔐 Ujian Sekolah</h2>
-            <p>Masukkan Token dari Pengawas</p>
+            <h2>💻 CBT SEKOLAH</h2>
+            <p>Masukkan Token Ujian</p>
             <input type="text" id="tokenInput" placeholder="TOKEN" autocomplete="off">
             <br>
             <button onclick="cekToken()" id="btnMasuk">MULAI MENGERJAKAN</button>
@@ -66,91 +77,143 @@
         <iframe id="frameSoal" src=""></iframe>
     </div>
 
-    <div id="warning-screen">
+    <div id="warning-screen" class="overlay-screen">
         <h1>⛔ PELANGGARAN!</h1>
-        <p>Anda terdeteksi meninggalkan halaman ujian (pindah tab/aplikasi).</p>
-        <p>Akses ujian Anda telah <b>DIBLOKIR</b>.</p>
-        <hr style="width: 50%; opacity: 0.5;">
-        <p>Lapor ke Pengawas untuk Token Baru.</p>
-        <button class="btn-reload" onclick="location.reload()">LOGIN ULANG</button>
+        <p>Anda membuka aplikasi lain. Ujian diblokir.</p>
+        <button onclick="location.reload()" style="padding:10px 20px; border-radius:20px; border:none; cursor:pointer;">LOGIN ULANG</button>
+    </div>
+
+    <div id="finish-screen" class="overlay-screen">
+        <h1>⌛ WAKTU HABIS!</h1>
+        <p>Silakan kumpulkan jawaban Anda segera.</p>
+        <p>Lapor ke Pengawas jika belum selesai.</p>
     </div>
 
     <script>
-        // --- TEMPEL LINK APPS SCRIPT ANDA DI BAWAH INI ---
+        // --- GANTI LINK APPS SCRIPT ANDA DI SINI ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4MKjvOYrN4HbZiBBqr7yo-JRKwp36S4YFun1hVyo4GzKvu6v6GfOk174T9M1qFmrd3g/exec"; 
 
         let isUjianBerjalan = false;
+        let sisaWaktu = 0;
+        let timerInterval;
 
-        // --- FUNGSI LOGIN ---
+        // --- FUNGSI UTAMA ---
         function cekToken() {
             const token = document.getElementById('tokenInput').value.trim();
             const btn = document.getElementById('btnMasuk');
             const pesan = document.getElementById('pesan');
 
-            if(!token) {
-                pesan.innerText = "Token wajib diisi!";
-                return;
-            }
+            if(!token) { pesan.innerText = "Token wajib diisi!"; return; }
 
-            btn.innerText = "Memeriksa...";
-            btn.disabled = true;
+            btn.innerText = "Memuat Soal..."; btn.disabled = true;
 
-            // Cek ke Google Sheet
             fetch(SCRIPT_URL + "?password=" + token)
             .then(response => response.json())
             .then(data => {
                 if(data.status === "SUKSES") {
-                    mulaiUjian(data.url);
+                    document.getElementById('lblMapel').innerText = data.mapel;
+                    const tanggalSekarang = new Date().toLocaleDateString('id-ID');
+                    document.getElementById('lblKelas').innerText = data.kelas + " | " + tanggalSekarang;
+                    mulaiUjian(data.url, data.waktu);
                 } else {
-                    pesan.innerText = "Token SALAH / TIDAK DITEMUKAN!";
-                    btn.innerText = "MULAI MENGERJAKAN";
-                    btn.disabled = false;
+                    pesan.innerText = "Token Salah / Tidak Ditemukan!";
+                    btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
                 }
             })
             .catch(error => {
                 pesan.innerText = "Gagal koneksi internet.";
-                btn.innerText = "MULAI MENGERJAKAN";
-                btn.disabled = false;
+                btn.innerText = "MULAI MENGERJAKAN"; btn.disabled = false;
             });
         }
 
-        function mulaiUjian(urlSoal) {
-            // Masuk Fullscreen
+        function mulaiUjian(url, menit) {
             document.documentElement.requestFullscreen().catch((e) => {});
             
-            // Ganti Tampilan
             document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('info-bar').style.display = 'flex';
             document.getElementById('exam-screen').style.display = 'block';
-            document.getElementById('frameSoal').src = urlSoal;
+            document.getElementById('frameSoal').src = url;
 
-            // Aktifkan Security
             isUjianBerjalan = true;
+            
+            // JALANKAN PATROLI BARU
             aktifkanPatroli();
+            jalankanTimer(menit);
         }
 
-        // --- SISTEM KEAMANAN (PATROLI) ---
+        // --- LOGIKA TIMER ---
+        function jalankanTimer(menit) {
+            sisaWaktu = menit * 60;
+            updateDisplayTimer();
+
+            timerInterval = setInterval(() => {
+                sisaWaktu--;
+                updateDisplayTimer();
+                if (sisaWaktu <= 0) {
+                    clearInterval(timerInterval);
+                    waktuHabis();
+                }
+            }, 1000);
+        }
+
+        function updateDisplayTimer() {
+            let jam = Math.floor(sisaWaktu / 3600);
+            let menit = Math.floor((sisaWaktu % 3600) / 60);
+            let detik = sisaWaktu % 60;
+            document.getElementById('timerDisplay').innerText = 
+                (jam < 10 ? "0" + jam : jam) + ":" + 
+                (menit < 10 ? "0" + menit : menit) + ":" + 
+                (detik < 10 ? "0" + detik : detik);
+        }
+
+        function waktuHabis() {
+            isUjianBerjalan = false;
+            document.getElementById('exam-screen').style.display = 'none';
+            document.getElementById('finish-screen').style.display = 'flex';
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+
+        // --- SISTEM KEAMANAN (ANTI-CURANG) YANG SUDAH DIPERBAIKI ---
         function aktifkanPatroli() {
-            // Deteksi Pindah Tab / Minimize
+            const frame = document.getElementById('frameSoal');
+            
+            // 1. Deteksi Pindah Tab / Minimize (Ini paling akurat)
             document.addEventListener("visibilitychange", function() {
                 if (document.hidden && isUjianBerjalan) {
-                    blokirSiswa();
+                    blokirSiswa("Membuka Tab Lain / Minimize");
                 }
             });
 
-            // Deteksi Klik di luar jendela
+            // 2. Deteksi Kehilangan Fokus (Blur) - TAPI LEBIH PINTAR
             window.addEventListener("blur", function() {
                 if (isUjianBerjalan) {
-                    blokirSiswa();
+                    // Beri jeda 0.1 detik untuk cek: Apakah fokusnya pindah ke Iframe?
+                    setTimeout(() => {
+                        // Jika elemen yang aktif sekarang ADALAH iframe, berarti AMAN (Siswa cuma klik soal)
+                        if (document.activeElement === frame) {
+                            // Aman, tidak melakukan apa-apa
+                            return; 
+                        } else {
+                            // Fokus pindah ke tempat lain (misal Taskbar/Aplikasi lain) -> BLOKIR
+                            blokirSiswa("Klik di luar aplikasi");
+                        }
+                    }, 100);
                 }
             });
         }
 
-        function blokirSiswa() {
+        function blokirSiswa(alasan) {
             isUjianBerjalan = false;
-            document.getElementById('frameSoal').src = ""; // Matikan Soal
+            clearInterval(timerInterval);
             document.getElementById('exam-screen').style.display = 'none';
-            document.getElementById('warning-screen').style.display = 'flex'; // Munculkan Layar Merah
-            if (document.exitFullscreen) document.exitFullscreen(); // Keluar Fullscreen
+            
+            // Tampilkan pesan pelanggaran
+            document.getElementById('warning-screen').style.display = 'flex';
+            
+            // Opsional: Tampilkan alasan di console (F12)
+            console.log("DIBLOKIR KARENA: " + alasan);
+
+            if (document.exitFullscreen) document.exitFullscreen();
         }
 
         // Mencegah Klik Kanan
